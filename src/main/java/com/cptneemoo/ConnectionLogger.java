@@ -1,8 +1,6 @@
 package com.cptneemoo;
 
-import com.cptneemoo.exception.ConnectionDeletingException;
-import com.cptneemoo.exception.ConnectionReadingException;
-import com.cptneemoo.exception.ConnectionWritingException;
+import com.cptneemoo.exception.ConnectionIOException;
 
 import java.io.*;
 import java.time.Instant;
@@ -14,9 +12,11 @@ public class ConnectionLogger {
 
     private static Logger log = Logger.getLogger(ConnectionLogger.class.getName());
 
-    private static final String logFilePath = "C:\\projects\\mentor\\ConnectionLogger\\log\\log.txt";
+    private static final String projectPath = System.getProperty("user.dir");
 
-    private static final String tempFilePath = "C:\\projects\\mentor\\ConnectionLogger\\log\\temp.txt";
+    private static final String fileSeparator = System.getProperty("file.separator");
+
+    private static final String logFilePath = String.format("%s%slog%slog.txt", projectPath, fileSeparator, fileSeparator);
 
     public static void main(String[] args) {
         ArrayList<Connection> connections = new ArrayList<>(10);
@@ -29,12 +29,12 @@ public class ConnectionLogger {
             Thread.sleep(1000);
             readConnection(0, Long.MAX_VALUE);
             deleteOldConnection();
-        } catch (ConnectionWritingException | ConnectionReadingException | InterruptedException | ConnectionDeletingException e) {
+        } catch (InterruptedException | ConnectionIOException e) {
             log.severe(String.format("Exception of type %s with message %s", e.getClass().getName(), e.getMessage()));
         }
     }
 
-    public static void writeConnection(List<Connection> connections) throws ConnectionWritingException {
+    public static void writeConnection(List<Connection> connections) throws ConnectionIOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFilePath, true))) {
             for (Connection connection : connections) {
                 writer.write(String.format("%d %d %s\n"
@@ -43,13 +43,15 @@ public class ConnectionLogger {
                         , connection.getIp()));
             }
         } catch (IOException e) {
-            throw new ConnectionWritingException("Unable to write in log.txt");
+            ConnectionIOException cio = new ConnectionIOException("Unable to write in log.txt");
+            cio.initCause(e);
+            throw cio;
         }
     }
 
     public static List<Connection> readConnection(long startTime, long endTime)
-            throws ConnectionReadingException {
-        if (endTime < startTime) throw new ConnectionReadingException("endDate is lower than startDate");
+            throws ConnectionIOException {
+        if (endTime < startTime) throw new ConnectionIOException("endDate is lower than startDate");
         ArrayList<Connection> connections = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(logFilePath))) {
             String line = br.readLine();
@@ -66,34 +68,39 @@ public class ConnectionLogger {
                 line = br.readLine();
             }
         } catch (Exception e) {
-            throw new ConnectionReadingException("Unable to read from log.txt");
+            ConnectionIOException cio = new ConnectionIOException("Unable to read from log.txt");
+            cio.initCause(e);
+            throw cio;
         }
         return connections;
     }
 
 
-    public static void deleteOldConnection() throws ConnectionDeletingException {
+    public static void deleteOldConnection() throws ConnectionIOException {
         long threeDaysInMilliseconds = 86400 * 3 * 1000;
         long now = Instant.now().toEpochMilli();
-        File logFile = new File(logFilePath);
-        File tempFile = new File(tempFilePath);
-        try (
-                BufferedReader br = new BufferedReader(new FileReader(logFile));
-                BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
-        ) {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(logFilePath))) {
             String line = br.readLine();
             while (line != null && !line.equals("")) {
                 String[] parts = line.split(" ");
                 long time = Long.parseLong(parts[0]);
                 if (time > now - threeDaysInMilliseconds) {
-                    bw.write(line + "\n");
+                    sb.append(line + System.lineSeparator());
                 }
                 line = br.readLine();
             }
         } catch (Exception e) {
-            throw new ConnectionDeletingException("Unable to delete");
+            ConnectionIOException cio = new ConnectionIOException("Unable to read log.txt");
+            cio.initCause(e);
+            throw cio;
         }
-        if (!logFile.delete()) throw new ConnectionDeletingException("Unable to delete log.txt");
-        if (!tempFile.renameTo(logFile)) throw new ConnectionDeletingException("Unable to rename temp.txt to log.txt");
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(logFilePath,false))){
+            bw.write(sb.toString());
+        } catch (Exception e){
+            ConnectionIOException cio = new ConnectionIOException("Unable to update log.txt");
+            cio.initCause(e);
+            throw cio;
+        }
     }
 }
