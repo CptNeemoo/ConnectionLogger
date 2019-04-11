@@ -9,11 +9,9 @@ class ConnectionFactory {
     private Random random = new Random();
 
     Connection getConnection() {
-        Connection connection = new Connection();
-        connection.setTime(Instant.now().toEpochMilli());
-        connection.setSession(nextIntFromRange(100000000, 999999999));
-        connection.setIp(generateIpv4());
-        return connection;
+        return new Connection(Instant.now().toEpochMilli()
+                , nextIntFromRange(100000000, 999999999)
+                , generateIpv4());
     }
 
     private int nextIntFromRange(int start, int end) {
