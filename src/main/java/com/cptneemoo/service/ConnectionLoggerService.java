@@ -9,15 +9,15 @@ import java.util.List;
 
 public class ConnectionLoggerService {
 
-    private static final String projectPath = System.getProperty("user.dir");
+    private static final String PROJECT_PATH = System.getProperty("user.dir");
 
-    private static final String fileSeparator = System.getProperty("file.separator");
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
-    private static final String logFilePath = String.format("%s%slog%slog.txt",
-            projectPath, fileSeparator, fileSeparator);
+    private static final String LOG_FILE_PATH = String.format("%s%slog%slog.txt",
+            PROJECT_PATH, FILE_SEPARATOR, FILE_SEPARATOR);
 
     public static void writeConnection(Connection connection, boolean append) throws ConnectionIOException {
-        try (FileWriter fr = new FileWriter(logFilePath, append)) {
+        try (FileWriter fr = new FileWriter(LOG_FILE_PATH, append)) {
             fr.write(String.format("%d %d %s\n"
                     , connection.getTime()
                     , connection.getSession()
@@ -29,7 +29,7 @@ public class ConnectionLoggerService {
 
     public static List<Connection> readConnections() throws ConnectionIOException {
         ArrayList<Connection> connections = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(logFilePath))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(LOG_FILE_PATH))) {
             String line = br.readLine();
             while (line != null && !line.equals("")) {
                 String[] parts = line.split(" ");
@@ -51,7 +51,7 @@ public class ConnectionLoggerService {
         long threeDaysAgoInMilliseconds = System.currentTimeMillis() - (86400 * 3 * 1000);
         List<Connection> connections = readConnections();
         try {
-            File temp = new File(logFilePath);
+            File temp = new File(LOG_FILE_PATH);
             if (temp.exists()) {
                 RandomAccessFile raf = new RandomAccessFile(temp, "rw");
                 raf.setLength(0);

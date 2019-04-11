@@ -13,9 +13,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            LoggingThread lt1 = new LoggingThread("Thread " + 1);
-            LoggingThread lt2 = new LoggingThread("Thread " + 2);
-            LoggingThread lt3 = new LoggingThread("Thread " + 3);
+            LoggingThread lt1 = new LoggingThread();
+            LoggingThread lt2 = new LoggingThread();
+            LoggingThread lt3 = new LoggingThread();
             List<LoggingThread> loggingThreadList = new ArrayList<>(3);
             loggingThreadList.add(lt1);
             loggingThreadList.add(lt2);
