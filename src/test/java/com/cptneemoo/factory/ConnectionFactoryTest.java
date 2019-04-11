@@ -1,5 +1,6 @@
-package com.cptneemoo;
+package com.cptneemoo.factory;
 
+import com.cptneemoo.data.Connection;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -34,8 +35,7 @@ class ConnectionFactoryTest {
 
     @Test
     void getConnection() {
-        ConnectionFactory connectionFactory = new ConnectionFactory();
-        Connection connection = connectionFactory.getConnection();
+        Connection connection = ConnectionFactory.getConnection();
         assertEquals(Instant.now().toEpochMilli(), connection.getTime(), 1000);
         assertEquals(9, numberLength(connection.getSession()));
         assertTrue(isValid(connection.getIp()));

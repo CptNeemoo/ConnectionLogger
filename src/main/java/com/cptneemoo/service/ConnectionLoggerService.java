@@ -1,12 +1,13 @@
-package com.cptneemoo;
+package com.cptneemoo.service;
 
+import com.cptneemoo.data.Connection;
 import com.cptneemoo.exception.ConnectionIOException;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConnectionLogger {
+public class ConnectionLoggerService {
 
     private static final String projectPath = System.getProperty("user.dir");
 
@@ -15,7 +16,7 @@ public class ConnectionLogger {
     private static final String logFilePath = String.format("%s%slog%slog.txt",
             projectPath, fileSeparator, fileSeparator);
 
-    static void writeConnection(Connection connection, boolean append) throws ConnectionIOException {
+    public static void writeConnection(Connection connection, boolean append) throws ConnectionIOException {
         try (FileWriter fr = new FileWriter(logFilePath, append)) {
             fr.write(String.format("%d %d %s\n"
                     , connection.getTime()
@@ -26,7 +27,7 @@ public class ConnectionLogger {
         }
     }
 
-    static List<Connection> readConnections() throws ConnectionIOException {
+    public static List<Connection> readConnections() throws ConnectionIOException {
         ArrayList<Connection> connections = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(logFilePath))) {
             String line = br.readLine();
@@ -46,7 +47,7 @@ public class ConnectionLogger {
     }
 
 
-    static void filterOldConnections() throws ConnectionIOException {
+    public static void filterOldConnections() throws ConnectionIOException {
         long threeDaysAgoInMilliseconds = System.currentTimeMillis() - (86400 * 3 * 1000);
         List<Connection> connections = readConnections();
         try {

@@ -1,11 +1,11 @@
-package com.cptneemoo;
+package com.cptneemoo.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-class Connection {
+public class Connection {
     private long time;
     private int session;
     private String ip;

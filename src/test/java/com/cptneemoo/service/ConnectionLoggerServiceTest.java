@@ -1,6 +1,8 @@
-package com.cptneemoo;
+package com.cptneemoo.service;
 
+import com.cptneemoo.data.Connection;
 import com.cptneemoo.exception.ConnectionIOException;
+import com.cptneemoo.factory.ConnectionFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ConnectionLoggerTest {
+class ConnectionLoggerServiceTest {
 
     private static final String projectPath = System.getProperty("user.dir");
 
@@ -44,19 +46,19 @@ class ConnectionLoggerTest {
     @Test
     void connectionTest() throws ConnectionIOException {
         Connection connection = new Connection(System.currentTimeMillis(), 123456789, "123.123.123.123");
-        ConnectionLogger.writeConnection(connection, true);
-        List<Connection> connections = ConnectionLogger.readConnections();
+        ConnectionLoggerService.writeConnection(connection, true);
+        List<Connection> connections = ConnectionLoggerService.readConnections();
         assertTrue(connections.contains(connection));
     }
 
     @Test
     void filterOldConnectionsTest() throws ConnectionIOException {
-        Connection connection = new ConnectionFactory().getConnection();
+        Connection connection = ConnectionFactory.getConnection();
         connection.setTime(new Random().nextInt(10000));
-        ConnectionLogger.writeConnection(connection, true);
-        List<Connection> oldConnections = ConnectionLogger.readConnections();
-        ConnectionLogger.filterOldConnections();
-        List<Connection> newConnections = ConnectionLogger.readConnections();
+        ConnectionLoggerService.writeConnection(connection, true);
+        List<Connection> oldConnections = ConnectionLoggerService.readConnections();
+        ConnectionLoggerService.filterOldConnections();
+        List<Connection> newConnections = ConnectionLoggerService.readConnections();
         assertFalse(newConnections.contains(connection));
         assertTrue(oldConnections.containsAll(newConnections));
     }
